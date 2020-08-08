@@ -1,0 +1,192 @@
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
+public class fileWriter {
+	public static String utf8(String str) {
+		String res;
+		byte[] bytes = str.getBytes(StandardCharsets.UTF_8); 
+		res = new String(bytes, StandardCharsets.UTF_8);
+		return res;
+	}
+	public static void readFile(String path) {
+		File file= new File(path);
+		String line;
+		try {
+		FileReader fr= new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		while ((line = br.readLine()) != null){
+		       System.out.println(line);
+		     }
+		fr.close();
+		}
+		catch(Exception error) {
+			System.out.println(error);
+		}
+	}
+	public static void writeFile(String content) {
+		File file= new File("C:\\Users\\ASUS\\Desktop\\html\\posts\\id-"+findProp("wp:post_id")+".html");
+		try {
+			FileWriter fw= new FileWriter(file);
+			for(int i=0;i<content.length();i++) {
+				fw.append(content.charAt(i));
+			}
+			fw.close();
+		}
+		catch(Exception error) {
+			System.out.println(error);
+		}
+	}
+	public static String trimCDATA(String word) {
+		try {
+		return word.substring(word.indexOf("!")+8, word.indexOf("]"));
+		}
+		catch(Exception e) {
+			return word;
+		}
+	}
+	public static String trimTag(String word) {
+		try {
+			return word.substring(word.indexOf(">")+1, word.indexOf("/")-1);
+			}
+			catch(Exception e) {
+				return word;
+			}
+	}
+	public static String findProp(String word) {
+		File file= new File("C:\\Users\\ASUS\\Desktop\\html\\g.html");
+		String line;
+		int run=0;
+		try {
+		FileReader fr= new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		System.out.println();
+		while ((line = br.readLine()) != null){
+		    if(line.indexOf("<"+word+">")!=-1) {
+		    	return line.substring(line.indexOf(">")+1, line.indexOf("/")-1);
+		    	//break;
+		    }
+		}
+		fr.close();
+		}
+		catch(Exception error) {
+			System.out.println(error);
+		}
+		return "fail";
+	}
+	public static String findContent() {
+		File file= new File("C:\\Users\\ASUS\\Desktop\\html\\g.html");
+		String line;
+		String word="content:encoded";
+		String content="";
+		int run=0;
+		try {
+		FileReader fr= new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		while ((line = br.readLine()) != null){
+		    if(line.indexOf("<"+word+">")!=-1) {
+		    	run=1;
+		    }
+		    	if(run==1) content+="<br>\n"+line;
+		    		//System.out.println(line);
+		    	if(line.indexOf("</"+word+">")!=-1) break;
+		}
+		fr.close();
+		}
+		catch(Exception error) {
+			System.out.println(error);
+		}
+		return content;
+	}
+	public static void readPosts(String path) {
+		File file= new File(path);
+		int j=1;
+		String line;
+		String title="", content="", link="";
+		int runItem=0, runTitle=0, runContent=0;
+		try {
+		FileReader fr= new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		while ((line = br.readLine()) != null){
+		    if(line.indexOf("<item>")!=-1) {
+		    	runItem=1;
+		    }
+	    	if(runItem==1) {
+	    		if(line.indexOf("<title>")!=-1) {
+			    	runTitle=1;
+			    }
+	    		if(runTitle==1) {
+	    			title+=line;
+	    			
+	    		}
+	    		if(line.indexOf("</title>")!=-1) {
+	    			title=trimTag(title);
+	    			System.out.println(title);
+			    	runTitle=0;
+			    }
+	    		
+	    		if(line.indexOf("<content:encoded>")!=-1) {
+			    	runContent=1;
+			    }
+		    	if(runContent==1) content+="<br>\n"+line;
+		    		//System.out.println(line);
+		    	if(line.indexOf("</content:encoded>")!=-1) {
+		    		content=trimCDATA(content);
+		    		runContent=0;
+		    	}
+	    		
+	    		if(line.indexOf("<wp:post_name>")!=-1) {
+	    			link=trimCDATA(line);
+	    			File filepost= new File("C:\\Users\\ASUS\\Desktop\\html\\posts\\"+link+".blade.php");
+	    			content="@extends('layouts.app')\r\n<br>" + 
+	    					"		@section('content')\r\n<br>" + 
+	    					"<h1>"+title+"</h1>"+
+	    					content+
+	    					"\r\n<br>" + 
+	    					"		@endsection";
+	    			try {
+	    				FileWriter fw= new FileWriter(filepost);
+	    				for(int i=0;i<content.length();i++) {
+	    					fw.append(content.charAt(i));
+	    				}
+	    				fw.close();
+	    				//System.out.println(j+++"\n");
+	    			}
+	    			catch(Exception error) {
+	    				System.out.println(error);
+	    			}
+	    			
+			    }
+	    	}
+	    		//System.out.println(line);
+	    	if(line.indexOf("</item>")!=-1) {
+	    		//System.out.println(link+title+content);
+	    		link="";
+    			title="";
+    			content="";
+	    		runItem=0;
+	    	}
+		}
+		fr.close();
+		}
+		catch(Exception error) {
+			System.out.println(error);
+		}
+	}
+	public static void main(String[] args) {
+		//findContent();
+		//System.out.println();
+		//writeFile(trimCDATA(findContent()));
+		/*@extends('layouts.app')
+		@section('content')
+
+		@endsection*/
+		//System.out.println(trimTag("<>!dsadas]sa</>"));
+		readPosts("C:\\Users\\ASUS\\Desktop\\html\\posts\\posts.xml");
+		//System.out.println(trimCDATA(findProp("wp:post_name")));
+	}
+
+}
